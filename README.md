@@ -89,4 +89,3 @@ To create a single `.exe` file with a custom icon, use **PyInstaller**:
 5. **Monitor** progress in the table below.
 6. **Clear Completed** when done.
 
----
