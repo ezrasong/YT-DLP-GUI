@@ -1,0 +1,152 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:YtDlpGui"
+        x:Class="YtDlpGui.MainWindow"
+        Title="yt-dlp GUI"
+        Width="1050" Height="900"
+        MinWidth="700" MinHeight="500"
+        Background="#111111"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid Margin="32,24" RowDefinitions="Auto,16,Auto,16,Auto,16,Auto,12,*">
+
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="yt-dlp GUI" FontSize="22" FontWeight="Bold" Foreground="White"/>
+                <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,4,0,0">
+                    <TextBlock Text="{Binding YtDlpStatusText}" Foreground="{Binding YtDlpStatusColor}" FontSize="12"/>
+                    <TextBlock Text="ffmpeg" Foreground="{Binding FfmpegStatusColor}" FontSize="12"/>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <Button Content="{Binding UpdateButtonText}"
+                        Command="{Binding UpdateYtDlpCommand}"
+                        Classes="outlined"
+                        IsVisible="{Binding ShowUpdateButton}"/>
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsChecking}"
+                             Width="24" Height="24" MinHeight="0" MinWidth="0"
+                             Classes="circular" Foreground="#3478F6"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- URL Input Card -->
+        <Border Grid.Row="2" Background="#1C1C1E" CornerRadius="18" Padding="20">
+            <StackPanel>
+                <TextBlock Text="Video / Playlist URL" Foreground="#8E8E93" FontSize="12" Margin="0,0,0,12"/>
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding Url}" Watermark="Paste a URL here..."/>
+                    <Button Grid.Column="1" Content="Paste" Command="{Binding PasteCommand}"
+                            Classes="text" Foreground="White" Margin="12,0,0,0"/>
+                    <Button Grid.Column="2" Content="Add" Command="{Binding AddToQueueCommand}"
+                            Classes="accent" Margin="12,0,0,0" Height="44"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Options Card -->
+        <Border Grid.Row="4" Background="#1C1C1E" CornerRadius="18" Padding="20">
+            <StackPanel Spacing="16">
+                <Grid ColumnDefinitions="*,16,*">
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Format" Foreground="#8E8E93" FontSize="12" Margin="0,0,0,8"/>
+                        <ComboBox ItemsSource="{Binding FormatOptions}"
+                                  SelectedItem="{Binding SelectedFormat}"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Quality" Foreground="#8E8E93" FontSize="12" Margin="0,0,0,8"/>
+                        <ComboBox ItemsSource="{Binding CurrentQualities}"
+                                  SelectedItem="{Binding SelectedQuality}"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel>
+                    <TextBlock Text="Save to" Foreground="#8E8E93" FontSize="12" Margin="0,0,0,8"/>
+                    <Button Content="{Binding OutputDir}" Command="{Binding BrowseOutputCommand}"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                            Background="#2A2A2C" Foreground="White" CornerRadius="12"
+                            Padding="16,14" BorderThickness="0"/>
+                </StackPanel>
+
+                <ToggleSwitch IsChecked="{Binding Subtitles}" OnContent="Subtitles" OffContent="Subtitles"/>
+                <ToggleSwitch IsChecked="{Binding SponsorBlock}" OnContent="SponsorBlock" OffContent="SponsorBlock"/>
+                <ToggleSwitch IsChecked="{Binding FullPlaylist}" OnContent="Full Playlist" OffContent="Full Playlist"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Queue Header -->
+        <Grid Grid.Row="6" ColumnDefinitions="*,Auto">
+            <TextBlock Text="Queue" FontSize="18" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" IsVisible="{Binding HasJobs}">
+                <Button Content="Download All" Command="{Binding StartAllCommand}" Classes="accent"/>
+                <Button Content="Cancel All" Command="{Binding CancelAllCommand}" Classes="outlined"/>
+                <Button Content="Clear" Command="{Binding ClearFinishedCommand}" Classes="text" Foreground="#FF453A"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Queue Items -->
+        <Panel Grid.Row="8">
+            <!-- Empty state -->
+            <TextBlock Text="No downloads yet. Paste a URL and tap Add."
+                       Foreground="#555555" FontSize="14"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       IsVisible="{Binding !HasJobs}"/>
+
+            <!-- Job list -->
+            <ScrollViewer IsVisible="{Binding HasJobs}">
+                <ItemsControl ItemsSource="{Binding Jobs}" Margin="0,0,0,16">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#1C1C1E" CornerRadius="18" Padding="20" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <!-- Title + Status -->
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="{Binding Title}" Foreground="White" FontSize="15"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <Border Grid.Column="1" Background="{Binding StatusBgColor}" CornerRadius="8"
+                                                Padding="10,4" Margin="12,0,0,0">
+                                            <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusFgColor}" FontSize="11" FontWeight="Medium"/>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- URL -->
+                                    <TextBlock Text="{Binding Url}" Foreground="#8E8E93" FontSize="12"
+                                               TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+
+                                    <!-- Progress -->
+                                    <StackPanel IsVisible="{Binding IsActive}" Margin="0,12,0,0" Spacing="6">
+                                        <ProgressBar Value="{Binding Progress}" Maximum="1" Minimum="0"/>
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <TextBlock Text="{Binding ProgressText}" Foreground="#3478F6" FontSize="11"/>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="16">
+                                                <TextBlock Text="{Binding Speed}" Foreground="#8E8E93" FontSize="11"/>
+                                                <TextBlock Text="{Binding Eta}" Foreground="#8E8E93" FontSize="11"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Error -->
+                                    <TextBlock Text="{Binding Error}" Foreground="#FF453A" FontSize="12"
+                                               TextTrimming="CharacterEllipsis" Margin="0,8,0,0"
+                                               IsVisible="{Binding HasError}"/>
+
+                                    <!-- Actions -->
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+                                        <Button Content="Cancel" Command="{Binding DoCancelCommand}"
+                                                IsVisible="{Binding CanCancel}" Classes="text" Foreground="#FF453A"/>
+                                        <Button Content="Retry" Command="{Binding DoRetryCommand}"
+                                                IsVisible="{Binding CanRetry}" Classes="text" Foreground="#3478F6"/>
+                                        <Button Content="✕" Command="{Binding DoRemoveCommand}"
+                                                IsVisible="{Binding CanRemove}" Classes="text" Foreground="#8E8E93"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Panel>
+    </Grid>
+</Window>

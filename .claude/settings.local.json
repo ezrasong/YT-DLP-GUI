@@ -24,7 +24,20 @@
       "Bash(./gradlew downloadBinaries)",
       "Bash(./gradlew createDistributable)",
       "Bash(find C:/Users/ezras/Documents/GitHub/YT-DLP-GUI/build/compose/binaries/main/app -name *.exe -o -name yt-dlp* -o -name ffmpeg*)",
-      "Bash(ls \"/c/Program Files/7-Zip/\"*.sfx)"
+      "Bash(ls \"/c/Program Files/7-Zip/\"*.sfx)",
+      "Bash(rm -rf src/main gradle gradlew gradlew.bat build.gradle.kts settings.gradle.kts gradle.properties appResources build .gradle .kotlin)",
+      "Bash(mkdir -p src/bin)",
+      "Bash(dotnet --version)",
+      "Bash(where dotnet:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet run:*)",
+      "Bash(dotnet publish:*)",
+      "Bash(mkdir -p bin)",
+      "Bash(curl -L -o bin/yt-dlp.exe \"https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe\")",
+      "Bash(curl -L -o bin/ffmpeg.zip \"https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip\")",
+      "Bash(python3 -c \":*)",
+      "Bash(powershell -Command \":*)",
+      "Bash(rm bin/ffmpeg.zip)"
     ]
   }
 }

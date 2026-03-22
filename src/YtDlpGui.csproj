@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AssemblyName>YtDlpGui</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.1.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.1.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.1.0" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.1.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="bin/yt-dlp.exe" Condition="Exists('bin/yt-dlp.exe')" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="bin/ffmpeg.exe" Condition="Exists('bin/ffmpeg.exe')" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="bin/yt-dlp" Condition="Exists('bin/yt-dlp')" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="bin/ffmpeg" Condition="Exists('bin/ffmpeg')" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
