@@ -1,91 +1,98 @@
-## yt-dlp GUI Downloader
+# YT-DLP GUI
 
-A modern, dark-mode graphical interface for **yt-dlp**, designed for Windows. Easily download videos or extract audio in MP3 format. Features automatic updates for the yt-dlp backend, a download queue, progress tracking, and a polished, responsive UI.
+A modern, cross-platform desktop GUI for [yt-dlp](https://github.com/yt-dlp/yt-dlp) built with **Kotlin** and **Compose Multiplatform**. Features a OneUI-inspired design with a clean, rounded interface.
 
----
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)
+![Kotlin](https://img.shields.io/badge/kotlin-2.0-purple)
 
 ## Features
 
-* **Dark-themed UI** using Tkinter + ttkbootstrap for a sleek look.
-* **Automatic update** check and installation for yt-dlp on launch.
-* **Download Formats**:
+- **Queue-based downloads** with real-time progress, speed, and ETA
+- **Format selection** — Video (MP4, MKV, WEBM) or Audio (MP3, M4A, FLAC, WAV, OPUS)
+- **Quality selection** — Best, 4K, 1440p, 1080p, 720p, 480p, 360p (video) / bitrate options (audio)
+- **SponsorBlock** — automatically remove sponsored segments
+- **Subtitle downloads** — embed subtitles in all available languages
+- **Playlist support** — download full playlists or single videos
+- **Concurrent downloads** — configurable parallel download limit
+- **yt-dlp management** — auto-install, version checking, and one-click updates
+- **Dark / Light / System theme** — OneUI-inspired design
+- **Cross-platform** — single codebase for Windows, macOS, and Linux
 
-  * Video (MP4)
-  * Audio (MP3)
-* **Download Queue**: Add multiple URLs, start all, and clear completed jobs.
-* **Progress Tracking**: Live percentage updates per job.
-* **Responsive Layout**: Scales and centers controls for any window size.
-* **Custom Icon**: Displays a downloads-style icon in the title bar and taskbar.
+## Download
 
----
+Grab the latest release from the [Releases](../../releases) page:
 
-## Prerequisites
+| Platform | Installer | Portable |
+|----------|-----------|----------|
+| Windows  | `.msi`    | `.zip`   |
+| macOS x64 | `.dmg`   | `.tar.gz` |
+| macOS ARM | `.dmg`   | `.tar.gz` |
+| Linux    | `.deb`    | `.tar.gz` |
 
-* **Python 3.8+** installed on Windows
-* **yt-dlp**
-* **ttkbootstrap**
-* **FFmpeg** in your PATH (required for MP3 conversion)
-* **download.ico** in `images/download.ico` for the app icon
+## Build from Source
 
-## Installation
+### Prerequisites
 
-1. Clone or download this repository:
+- **JDK 17+** (recommended: [Adoptium Temurin](https://adoptium.net/))
+- **Gradle 8.10+** (or use the wrapper)
 
-   ```bash
-   git clone https://github.com/ezrasong/YT-DLP-GUI.git
-   cd YT-DLP-GUI
-   ```
-2. Install Python dependencies:
+### Generate Gradle Wrapper (first time only)
 
-   ```bash
-   pip install yt-dlp ttkbootstrap
-   ```
-3. Ensure `ffmpeg.exe` is available on your system PATH for audio extraction.
-
----
-
-## Running the App
-
-Simply launch with:
+If the repository doesn't include `gradlew` scripts:
 
 ```bash
-python app.py
+gradle wrapper
 ```
 
-The application window will appear, auto-checking for yt-dlp updates.
+### Run in development
 
----
+```bash
+./gradlew run
+```
 
-## Packaging as a Windows Executable
+### Build native packages
 
-To create a single `.exe` file with a custom icon, use **PyInstaller**:
+```bash
+# Windows (.msi)
+./gradlew packageMsi
 
-1. Install PyInstaller:
+# macOS (.dmg)
+./gradlew packageDmg
 
-   ```bash
-   pip install pyinstaller
-   ```
-2. From the project root, run:
+# Linux (.deb)
+./gradlew packageDeb
 
-   ```powershell
-   pyinstaller --onefile --windowed --icon=images/download.ico app.py
-   ```
-3. Find `yt_dlp_gui.exe` in the `dist/` folder.
+# Portable directory (all platforms)
+./gradlew createDistributable
+```
 
-> **Tip**: If `pyinstaller` is not recognized, invoke via Python:
->
-> ```powershell
-> py -m PyInstaller --onefile --windowed --icon=images/download.ico app.py
-> ```
+## Project Structure
 
----
+```
+├── build.gradle.kts              # Build configuration
+├── src/main/kotlin/com/ytdlpgui/
+│   ├── Main.kt                   # Application entry point
+│   ├── theme/
+│   │   └── Theme.kt              # OneUI-inspired Material 3 theme
+│   ├── model/
+│   │   └── Models.kt             # Data models and enums
+│   ├── service/
+│   │   ├── YtDlpService.kt       # yt-dlp binary management
+│   │   └── DownloadManager.kt    # Queue and state management
+│   └── ui/
+│       ├── App.kt                # Root layout with sidebar navigation
+│       ├── Components.kt         # Reusable UI components
+│       ├── DownloadScreen.kt     # Main download view
+│       └── SettingsScreen.kt     # Settings and yt-dlp management
+```
 
-## Usage
+## Tech Stack
 
-1. **Enter** the video URL in the top field.
-2. **Select** format (Video MP4 or Audio MP3).
-3. **Choose** download folder or accept the default.
-4. **Add to Queue**, then **Start All**.
-5. **Monitor** progress in the table below.
-6. **Clear Completed** when done.
+- **Language:** Kotlin 2.0
+- **UI Framework:** Compose Multiplatform 1.7 (Material 3)
+- **Async:** Kotlin Coroutines
+- **Packaging:** Compose native distributions (MSI, DMG, DEB)
 
+## License
+
+MIT

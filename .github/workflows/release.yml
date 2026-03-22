@@ -4,63 +4,166 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Release version (e.g. v1.0.0)"
+        description: 'Release version (e.g. v2.0.0)'
         required: true
-        type: string
 
 permissions:
   contents: write
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: macos-latest
-            target: aarch64-apple-darwin
-          - platform: macos-13
-            target: x86_64-apple-darwin
-          - platform: windows-latest
-            target: x86_64-pc-windows-msvc
-
-    runs-on: ${{ matrix.platform }}
-
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-java@v4
         with:
-          node-version: 20
-          cache: npm
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Download bundled binaries
+        run: ./gradlew downloadBinaries
+
+      - name: Build distributable
+        run: ./gradlew createDistributable
+
+      - name: Create single exe
+        shell: pwsh
+        run: |
+          # Download 7-Zip Extra for 7zSD.sfx (self-extracting module with auto-run)
+          Invoke-WebRequest -Uri "https://www.7-zip.org/a/7z2408-extra.7z" -OutFile 7z-extra.7z
+          & "7z" x 7z-extra.7z -o7zextra -y
+
+          # Find the distributable directory
+          $distDir = (Get-ChildItem -Path "build\compose\binaries\main\app" -Directory | Select-Object -First 1).FullName
+
+          # Create SFX config — extracts to AppData and auto-launches
+          $config = @"
+          ;!@Install@!UTF-8!
+          Title="YT-DLP GUI"
+          GUIMode="1"
+          ExtractTitle="Launching YT-DLP GUI..."
+          ExtractPath="%LOCALAPPDATA%\YT-DLP-GUI"
+          RunProgram="%LOCALAPPDATA%\YT-DLP-GUI\YT-DLP GUI.exe"
+          ;!@InstallEnd@!
+          "@
+          # Write config without BOM
+          [System.IO.File]::WriteAllText("sfxconfig.txt", $config.Trim(), [System.Text.UTF8Encoding]::new($false))
+
+          # Create 7z archive of the distributable contents
+          & "7z" a -r -mx5 app.7z "$distDir\*"
+
+          # Concatenate: SFX module + config + archive = single exe
+          cmd /c "copy /b 7zextra\7zSD.sfx + sfxconfig.txt + app.7z yt-dlp-gui-windows-x64.exe"
+
+          Write-Host "Created yt-dlp-gui-windows-x64.exe ($('{0:N1}' -f ((Get-Item yt-dlp-gui-windows-x64.exe).Length / 1MB)) MB)"
+
+      - uses: actions/upload-artifact@v4
         with:
-          targets: ${{ matrix.target }}
+          name: windows-artifacts
+          path: yt-dlp-gui-windows-x64.exe
 
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
+  build-macos:
+    name: Build macOS (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - runner: macos-13
+            arch: x64
+          - runner: macos-14
+            arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
         with:
-          workspaces: src-tauri -> target
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Install npm dependencies
-        run: npm ci
+      - uses: gradle/actions/setup-gradle@v4
 
-      - name: Download yt-dlp & ffmpeg
-        env:
-          TAURI_TARGET_TRIPLE: ${{ matrix.target }}
-        run: npm run setup
+      - name: Download bundled binaries
+        run: ./gradlew downloadBinaries
 
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build distributable
+        run: ./gradlew createDistributable
+
+      - name: Package tar.gz
+        run: |
+          cd build/compose/binaries/main/app
+          tar -czf "$GITHUB_WORKSPACE/yt-dlp-gui-macos-${{ matrix.arch }}.tar.gz" .
+
+      - uses: actions/upload-artifact@v4
         with:
-          tagName: ${{ inputs.version }}
-          releaseName: "yt-dlp GUI ${{ inputs.version }}"
-          releaseBody: "See the assets below to download and install."
-          releaseDraft: true
-          prerelease: false
-          args: --target ${{ matrix.target }}
+          name: macos-${{ matrix.arch }}-artifacts
+          path: yt-dlp-gui-macos-${{ matrix.arch }}.tar.gz
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Download bundled binaries
+        run: ./gradlew downloadBinaries
+
+      - name: Build distributable
+        run: ./gradlew createDistributable
+
+      - name: Package tar.gz
+        run: |
+          cd build/compose/binaries/main/app
+          tar -czf "$GITHUB_WORKSPACE/yt-dlp-gui-linux-x64.tar.gz" .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-artifacts
+          path: yt-dlp-gui-linux-x64.tar.gz
+
+  release:
+    name: Create Release
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: YT-DLP GUI ${{ github.event.inputs.version }}
+          draft: true
+          body: |
+            ## Downloads
+
+            | Platform | File |
+            |----------|------|
+            | Windows (x64) | `yt-dlp-gui-windows-x64.exe` |
+            | macOS (Intel) | `yt-dlp-gui-macos-x64.tar.gz` |
+            | macOS (Apple Silicon) | `yt-dlp-gui-macos-arm64.tar.gz` |
+            | Linux (x64) | `yt-dlp-gui-linux-x64.tar.gz` |
+
+            ### Windows
+            Just run the `.exe` — it auto-extracts to AppData and launches. No installer needed.
+            yt-dlp and ffmpeg are bundled.
+
+            ### macOS / Linux
+            Extract the archive and run the app inside.
+          files: |
+            yt-dlp-gui-windows-x64.exe
+            yt-dlp-gui-macos-x64.tar.gz
+            yt-dlp-gui-macos-arm64.tar.gz
+            yt-dlp-gui-linux-x64.tar.gz

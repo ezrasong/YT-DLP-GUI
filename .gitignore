@@ -1,25 +1,34 @@
-# Dependencies
-node_modules/
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
-# Build
-dist/
-src-tauri/target/
+# Kotlin
+*.class
+
+# IDE
+.idea/
+.vs/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Compose
+.kotlin/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
 
 # Environment
 .env
 .env.*
 
-# IDE
-.idea/
-*.swp
-*.swo
-*~
+# Bundled binaries (downloaded at build time)
+appResources/
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Python (legacy)
-__pycache__/
-*.pyc
-*.pyo
+# Legacy
+native-artifacts/

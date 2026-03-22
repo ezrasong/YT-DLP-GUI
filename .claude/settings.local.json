@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(java -version)",
+      "Bash(gradle --version)",
+      "Bash(where java:*)",
+      "Bash(where gradle:*)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Users/ezras/Documents/GitHub/YT-DLP-GUI/**)",
+      "Bash(echo \"JAVA_HOME=$JAVA_HOME\")",
+      "Bash(winget search:*)",
+      "Bash(winget install:*)",
+      "Bash(taskkill /F /IM msiexec.exe)",
+      "Bash(\"/c/Program Files/Eclipse Adoptium/jdk-17.0.18.8-hotspot/bin/java.exe\" -version)",
+      "Bash(export PATH=\"$PATH:/c/Program Files/Eclipse Adoptium/jdk-17.0.18.8-hotspot/bin\")",
+      "Bash(export JAVA_HOME=\"/c/Program Files/Eclipse Adoptium/jdk-17.0.18.8-hotspot\")",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(gradle wrapper:*)",
+      "Bash(curl -sL \"https://services.gradle.org/distributions/gradle-8.10.2-bin.zip\" -o /tmp/gradle.zip)",
+      "Bash(mkdir -p /tmp/gradle)",
+      "Bash(unzip -qo /tmp/gradle.zip -d /tmp/gradle)",
+      "Bash(/tmp/gradle/gradle-8.10.2/bin/gradle wrapper:*)",
+      "Bash(./gradlew run:*)",
+      "Bash(./gradlew downloadBinaries)",
+      "Bash(./gradlew createDistributable)",
+      "Bash(find C:/Users/ezras/Documents/GitHub/YT-DLP-GUI/build/compose/binaries/main/app -name *.exe -o -name yt-dlp* -o -name ffmpeg*)",
+      "Bash(ls \"/c/Program Files/7-Zip/\"*.sfx)"
+    ]
+  }
+}
