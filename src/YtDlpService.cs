@@ -129,7 +129,8 @@ public class YtDlpService
         var bytes = await Http.GetByteArrayAsync(downloadUrl);
         await File.WriteAllBytesAsync(dest, bytes);
 
-        if (!IsWin) File.SetUnixFileMode(dest, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            File.SetUnixFileMode(dest, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
 
         _ytDlpPath = dest;
         return tag;

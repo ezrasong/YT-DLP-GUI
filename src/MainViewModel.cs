@@ -119,7 +119,7 @@ public partial class MainViewModel : ObservableObject
                 await _svc.InstallOrUpdateAsync();
                 await CheckYtDlpAsync();
             }
-            catch (Exception ex)
+            catch
             {
                 Dispatcher.UIThread.Post(() => YtDlpStatus = YtDlpStatus.Error);
             }

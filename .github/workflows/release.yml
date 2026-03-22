@@ -10,6 +10,9 @@ on:
 permissions:
   contents: write
 
+env:
+  DOTNET_VERSION: '8.0.x'
+
 jobs:
   build-windows:
     name: Build Windows
@@ -19,13 +22,13 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Download yt-dlp
-        run: |
-          mkdir -Force src/bin
-          Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "src/bin/yt-dlp.exe"
         shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path src/bin | Out-Null
+          Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "src/bin/yt-dlp.exe"
 
       - name: Download ffmpeg
         shell: pwsh
@@ -46,8 +49,8 @@ jobs:
           -p:IncludeAllContentForSelfExtract=true
 
       - name: Rename artifact
-        run: Copy-Item "src/bin/Release/net8.0/win-x64/publish/YtDlpGui.exe" "yt-dlp-gui-windows-x64.exe"
         shell: pwsh
+        run: Copy-Item "src/bin/Release/net8.0/win-x64/publish/YtDlpGui.exe" "yt-dlp-gui-windows-x64.exe"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -60,10 +63,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: macos-13
-            rid: osx-x64
-            arch: x64
-          - runner: macos-14
+          - runner: macos-15
             rid: osx-arm64
             arch: arm64
     steps:
@@ -71,7 +71,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Download yt-dlp
         run: |
@@ -106,7 +106,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Download yt-dlp
         run: |
@@ -156,7 +156,6 @@ jobs:
             | Platform | File | How to run |
             |----------|------|------------|
             | Windows x64 | `yt-dlp-gui-windows-x64.exe` | Just run it |
-            | macOS Intel | `yt-dlp-gui-macos-x64.tar.gz` | Extract, then run |
             | macOS Apple Silicon | `yt-dlp-gui-macos-arm64.tar.gz` | Extract, then run |
             | Linux x64 | `yt-dlp-gui-linux-x64.tar.gz` | Extract, `chmod +x`, then run |
 
@@ -165,6 +164,5 @@ jobs:
             yt-dlp and ffmpeg are bundled on all platforms.
           files: |
             yt-dlp-gui-windows-x64.exe
-            yt-dlp-gui-macos-x64.tar.gz
             yt-dlp-gui-macos-arm64.tar.gz
             yt-dlp-gui-linux-x64.tar.gz
